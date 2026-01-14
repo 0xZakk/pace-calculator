@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Free running pace calculator. Calculate your race pace, finish time, and split times for popular distances from 1 mile to marathon.">
+    <meta name="keywords" content="running pace calculator, marathon pace, half marathon time, 5k pace, running splits, race time calculator">
+    <meta name="author" content="Pace Calculator">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Running Pace Calculator">
+    <meta property="og:description" content="Calculate your running pace, finish time, and splits for any race distance.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Running Pace Calculator">
+    <meta name="twitter:description" content="Calculate your running pace, finish time, and splits for any race distance.">
+    <meta name="theme-color" content="#2563eb">
+    <title>Running Pace Calculator - Race Times & Splits</title>
+    <link rel="canonical" href="">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #fafafa;
+            --bg-card: #ffffff;
+            --text: #1a1a1a;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --input-bg: #f9fafb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #111111;
+            --bg-card: #1a1a1a;
+            --text: #f5f5f5;
+            --text-muted: #9ca3af;
+            --border: #2d2d2d;
+            --accent: #3b82f6;
+            --accent-hover: #60a5fa;
+            --input-bg: #222222;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .theme-toggle:hover { border-color: var(--accent); }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        .card h2 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        .unit-toggle {
+            display: flex;
+            background: var(--input-bg);
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .unit-btn {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .unit-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .tab:hover { border-color: var(--accent); }
+        .tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .form-group { margin-bottom: 1rem; }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        select, .time-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, .time-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .time-inputs {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .time-inputs input {
+            flex: 1;
+            text-align: center;
+        }
+
+        .time-sep {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .result {
+            background: var(--input-bg);
+            border-radius: 8px;
+            padding: 1.25rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .result-sub {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .splits { margin-top: 1.5rem; }
+
+        .splits h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .splits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .split-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .split-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .split-time {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 1rem 0.75rem; }
+            h1 { font-size: 1.25rem; }
+            .card { padding: 1rem; }
+            .result-value { font-size: 1.75rem; }
+            .splits-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pace Calculator</h1>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                <svg id="sunIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                </svg>
+                <svg id="moonIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+        </header>
+
+        <div class="card">
+            <div class="unit-toggle">
+                <button class="unit-btn active" data-unit="mi">Miles</button>
+                <button class="unit-btn" data-unit="km">Kilometers</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" data-mode="time-to-pace">Goal Time → Pace</button>
+                <button class="tab" data-mode="pace-to-time">Pace → Finish Time</button>
+            </div>
+
+            <div class="form-group">
+                <label for="distance">Distance</label>
+                <select id="distance">
+                    <option value="1.60934">1 Mile</option>
+                    <option value="5">5K</option>
+                    <option value="10">10K</option>
+                    <option value="15">15K</option>
+                    <option value="16.0934">10 Miles</option>
+                    <option value="21.0975" selected>Half Marathon</option>
+                    <option value="42.195">Marathon</option>
+                </select>
+            </div>
+
+            <div id="goalTimeInput" class="form-group">
+                <label>Goal Time</label>
+                <div class="time-inputs">
+                    <input type="number" id="goalHours" class="time-input" placeholder="HH" min="0" max="23">
+                    <span class="time-sep">:</span>
+                    <input type="number" id="goalMinutes" class="time-input" placeholder="MM" min="0" max="59">
+                    <span class="time-sep">:</span>
+                    <input type="number" id="goalSeconds" class="time-input" placeholder="SS" min="0" max="59">
+                </div>
+            </div>
+
+            <div id="paceInput" class="form-group" style="display:none;">
+                <label id="paceLabel">Pace (min/mi)</label>
+                <div class="time-inputs">
+                    <input type="number" id="paceMinutes" class="time-input" placeholder="MM" min="0" max="59">
+                    <span class="time-sep">:</span>
+                    <input type="number" id="paceSeconds" class="time-input" placeholder="SS" min="0" max="59">
+                </div>
+            </div>
+
+            <div class="result">
+                <div class="result-label" id="resultLabel">Your Pace</div>
+                <div class="result-value" id="resultValue">--:--</div>
+                <div class="result-sub" id="resultSub"></div>
+            </div>
+
+            <div class="splits" id="splitsSection" style="display:none;">
+                <h3 id="splitsTitle">Splits</h3>
+                <div class="splits-grid" id="splitsGrid"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Enter your goal time or pace to calculate race predictions.</p>
+        </footer>
+    </div>
+
+    <script>
+        const KM_PER_MILE = 1.60934;
+
+        let state = {
+            unit: 'mi',
+            mode: 'time-to-pace'
+        };
+
+        const distances = {
+            '1.60934': { name: '1 Mile', km: 1.60934 },
+            '5': { name: '5K', km: 5 },
+            '10': { name: '10K', km: 10 },
+            '15': { name: '15K', km: 15 },
+            '16.0934': { name: '10 Miles', km: 16.0934 },
+            '21.0975': { name: 'Half Marathon', km: 21.0975 },
+            '42.195': { name: 'Marathon', km: 42.195 }
+        };
+
+        // Theme
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+
+        function setTheme(dark) {
+            document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+            sunIcon.style.display = dark ? 'none' : 'block';
+            moonIcon.style.display = dark ? 'block' : 'none';
+            localStorage.setItem('theme', dark ? 'dark' : 'light');
+        }
+
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const savedTheme = localStorage.getItem('theme');
+        setTheme(savedTheme ? savedTheme === 'dark' : prefersDark);
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            setTheme(!isDark);
+        });
+
+        // Unit toggle
+        const unitBtns = document.querySelectorAll('.unit-btn');
+        unitBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const newUnit = btn.dataset.unit;
+                if (newUnit === state.unit) return;
+
+                unitBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                convertPaceUnits(state.unit, newUnit);
+                state.unit = newUnit;
+
+                updatePaceLabel();
+                calculate();
+            });
+        });
+
+        function convertPaceUnits(fromUnit, toUnit) {
+            const paceMin = document.getElementById('paceMinutes');
+            const paceSec = document.getElementById('paceSeconds');
+
+            const minutes = parseInt(paceMin.value) || 0;
+            const seconds = parseInt(paceSec.value) || 0;
+
+            if (minutes === 0 && seconds === 0) return;
+
+            const totalSeconds = minutes * 60 + seconds;
+            let newTotalSeconds;
+
+            if (fromUnit === 'mi' && toUnit === 'km') {
+                newTotalSeconds = totalSeconds / KM_PER_MILE;
+            } else {
+                newTotalSeconds = totalSeconds * KM_PER_MILE;
+            }
+
+            const newMinutes = Math.floor(newTotalSeconds / 60);
+            const newSeconds = Math.round(newTotalSeconds % 60);
+
+            paceMin.value = newMinutes || '';
+            paceSec.value = newSeconds || '';
+        }
+
+        function updatePaceLabel() {
+            const label = state.unit === 'mi' ? 'Pace (min/mi)' : 'Pace (min/km)';
+            document.getElementById('paceLabel').textContent = label;
+        }
+
+        // Mode tabs
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                state.mode = tab.dataset.mode;
+
+                const goalTimeInput = document.getElementById('goalTimeInput');
+                const paceInput = document.getElementById('paceInput');
+
+                if (state.mode === 'time-to-pace') {
+                    goalTimeInput.style.display = 'block';
+                    paceInput.style.display = 'none';
+                } else {
+                    goalTimeInput.style.display = 'none';
+                    paceInput.style.display = 'block';
+                }
+
+                calculate();
+            });
+        });
+
+        // Calculation
+        function calculate() {
+            const distanceKm = parseFloat(document.getElementById('distance').value);
+            const distanceMi = distanceKm / KM_PER_MILE;
+
+            if (state.mode === 'time-to-pace') {
+                const hours = parseInt(document.getElementById('goalHours').value) || 0;
+                const minutes = parseInt(document.getElementById('goalMinutes').value) || 0;
+                const seconds = parseInt(document.getElementById('goalSeconds').value) || 0;
+
+                const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+                if (totalSeconds === 0) {
+                    document.getElementById('resultValue').textContent = '--:--';
+                    document.getElementById('resultSub').textContent = '';
+                    document.getElementById('splitsSection').style.display = 'none';
+                    return;
+                }
+
+                const distance = state.unit === 'mi' ? distanceMi : distanceKm;
+                const paceSeconds = totalSeconds / distance;
+
+                const paceMin = Math.floor(paceSeconds / 60);
+                const paceSec = Math.round(paceSeconds % 60);
+
+                document.getElementById('resultLabel').textContent = `Your Pace (per ${state.unit})`;
+                document.getElementById('resultValue').textContent = `${paceMin}:${paceSec.toString().padStart(2, '0')}`;
+                document.getElementById('resultSub').textContent = `for ${distances[document.getElementById('distance').value].name}`;
+
+                showSplits(paceSeconds, distanceKm);
+            } else {
+                const paceMin = parseInt(document.getElementById('paceMinutes').value) || 0;
+                const paceSec = parseInt(document.getElementById('paceSeconds').value) || 0;
+
+                const paceSeconds = paceMin * 60 + paceSec;
+
+                if (paceSeconds === 0) {
+                    document.getElementById('resultValue').textContent = '--:--:--';
+                    document.getElementById('resultSub').textContent = '';
+                    document.getElementById('splitsSection').style.display = 'none';
+                    return;
+                }
+
+                const distance = state.unit === 'mi' ? distanceMi : distanceKm;
+                const totalSeconds = paceSeconds * distance;
+
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = Math.round(totalSeconds % 60);
+
+                let timeStr;
+                if (hours > 0) {
+                    timeStr = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                } else {
+                    timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                }
+
+                document.getElementById('resultLabel').textContent = 'Finish Time';
+                document.getElementById('resultValue').textContent = timeStr;
+                document.getElementById('resultSub').textContent = `at ${paceMin}:${paceSec.toString().padStart(2, '0')} per ${state.unit}`;
+
+                showSplits(paceSeconds, distanceKm);
+            }
+        }
+
+        function showSplits(paceSecondsPerUnit, totalDistanceKm) {
+            const splitsSection = document.getElementById('splitsSection');
+            const splitsGrid = document.getElementById('splitsGrid');
+            const splitsTitle = document.getElementById('splitsTitle');
+
+            splitsGrid.innerHTML = '';
+
+            const unitDistance = state.unit === 'mi' ? KM_PER_MILE : 1;
+            const totalUnits = totalDistanceKm / unitDistance;
+            const fullUnits = Math.floor(totalUnits);
+
+            if (fullUnits < 1) {
+                splitsSection.style.display = 'none';
+                return;
+            }
+
+            splitsTitle.textContent = `${state.unit === 'mi' ? 'Mile' : 'Kilometer'} Splits`;
+
+            for (let i = 1; i <= fullUnits; i++) {
+                const cumulativeSeconds = paceSecondsPerUnit * i;
+                const timeStr = formatTime(cumulativeSeconds);
+
+                const splitItem = document.createElement('div');
+                splitItem.className = 'split-item';
+                splitItem.innerHTML = `
+                    <div class="split-label">${state.unit === 'mi' ? 'Mile' : 'KM'} ${i}</div>
+                    <div class="split-time">${timeStr}</div>
+                `;
+                splitsGrid.appendChild(splitItem);
+            }
+
+            // Final partial split if exists
+            const partial = totalUnits - fullUnits;
+            if (partial > 0.01) {
+                const cumulativeSeconds = paceSecondsPerUnit * totalUnits;
+                const timeStr = formatTime(cumulativeSeconds);
+
+                const splitItem = document.createElement('div');
+                splitItem.className = 'split-item';
+                splitItem.innerHTML = `
+                    <div class="split-label">Finish</div>
+                    <div class="split-time">${timeStr}</div>
+                `;
+                splitsGrid.appendChild(splitItem);
+            }
+
+            splitsSection.style.display = 'block';
+        }
+
+        function formatTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = Math.round(totalSeconds % 60);
+
+            if (hours > 0) {
+                return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Event listeners for inputs
+        ['goalHours', 'goalMinutes', 'goalSeconds', 'paceMinutes', 'paceSeconds', 'distance'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculate);
+            document.getElementById(id).addEventListener('change', calculate);
+        });
+
+        // Initial calculation
+        calculate();
+    </script>
+</body>
+</html>
